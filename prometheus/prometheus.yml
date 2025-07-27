@@ -1,0 +1,17 @@
+# prometheus/prometheus.yml
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'kafka-jmx'
+    static_configs:
+      - targets: ['kafka-jmx-exporter:5556']
+
+  # This job should point to the statsd-exporter
+  - job_name: 'airflow'
+    static_configs:
+      - targets: ['statsd-exporter:9102']

@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: raw_data
+    database: github_events_db
+    schema: raw
+    tables:
+      - name: raw_events
