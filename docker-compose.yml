@@ -2,9 +2,6 @@
 version: '3.8'
 
 services:
-  #----------------------------------------------------------------
-  # Zookeeper: Required dependency for Kafka
-  #----------------------------------------------------------------
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.1
     container_name: zookeeper
@@ -15,36 +12,26 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
 
-  #----------------------------------------------------------------
-  # Kafka: The message queue for our data stream
-  #----------------------------------------------------------------
   kafka:
     image: confluentinc/cp-kafka:7.6.1
     container_name: kafka
     hostname: kafka
     ports:
-      # Exposes Kafka to the host machine for local development/testing
       - "9092:9092"
-      # Exposes Kafka for communication within the Docker network
       - "29092:29092"
     depends_on:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      # Listeners for internal and external communication
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      # JMX settings for monitoring
       KAFKA_JMX_PORT: 9999
       KAFKA_JMX_HOSTNAME: kafka
       KAFKA_JMX_OPTS: "-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka -Dcom.sun.management.jmxremote.rmi.port=9999"
 
-  #----------------------------------------------------------------
-  # Kafka JMX Exporter: Exposes Kafka metrics for Prometheus
-  #----------------------------------------------------------------
   kafka-jmx-exporter:
     image: sscaling/jmx-prometheus-exporter
     container_name: kafka-jmx-exporter
@@ -56,9 +43,6 @@ services:
       JMX_PORT: 9999
       JMX_HOST: kafka
 
-  #----------------------------------------------------------------
-  # Airflow Postgres Backend: Database for Airflow metadata
-  #----------------------------------------------------------------
   postgres-airflow:
     image: postgres:16
     container_name: postgres-airflow
@@ -69,9 +53,6 @@ services:
     volumes:
       - airflow-db-data:/var/lib/postgresql/data
 
-  #----------------------------------------------------------------
-  # NEW: StatsD Exporter for Airflow Metrics
-  #----------------------------------------------------------------
   statsd-exporter:
     image: prom/statsd-exporter:latest
     container_name: statsd-exporter
@@ -79,12 +60,8 @@ services:
       - "9102:9102"
       - "8125:8125/udp"
 
-  #----------------------------------------------------------------
-  # Airflow Services (Scheduler, Webserver, Init)
-  #----------------------------------------------------------------
   airflow-init:
-    build:
-      context: ./airflow
+    image: idabagusprw/airflow-with-gx:latest # Uses pre-built image
     container_name: airflow-init
     depends_on:
       - postgres-airflow
@@ -98,8 +75,7 @@ services:
       bash -c "airflow db init && airflow users create --username admin --firstname Admin --lastname User --password admin --role Admin --email admin@example.com"
 
   airflow-webserver:
-    build:
-      context: ./airflow
+    image: idabagusprw/airflow-with-gx:latest # Uses pre-built image
     container_name: airflow-webserver
     restart: always
     depends_on:
@@ -117,7 +93,6 @@ services:
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
-      # Enable metrics and point to the StatsD exporter
       - AIRFLOW__METRICS__STATSD_ON=True
       - AIRFLOW__METRICS__STATSD_HOST=statsd-exporter
       - AIRFLOW__METRICS__STATSD_PORT=8125
@@ -125,8 +100,7 @@ services:
     command: airflow webserver
 
   airflow-scheduler:
-    build:
-      context: ./airflow
+    image: idabagusprw/airflow-with-gx:latest # Uses pre-built image
     container_name: airflow-scheduler
     restart: always
     depends_on:
@@ -142,16 +116,12 @@ services:
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
-      # Enable metrics and point to the StatsD exporter
       - AIRFLOW__METRICS__STATSD_ON=True
       - AIRFLOW__METRICS__STATSD_HOST=statsd-exporter
       - AIRFLOW__METRICS__STATSD_PORT=8125
       - AIRFLOW__METRICS__STATSD_PREFIX=airflow
     command: airflow scheduler
 
-  #----------------------------------------------------------------
-  # Monitoring Stack (Prometheus & Grafana)
-  #----------------------------------------------------------------
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -170,6 +140,5 @@ services:
     depends_on:
       - prometheus
 
-# Define a volume for persistent postgres data
 volumes:
   airflow-db-data:

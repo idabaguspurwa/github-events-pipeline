@@ -1,2 +1,0 @@
-# airflow/requirements_gx.txt
-great-expectations[snowflake]
