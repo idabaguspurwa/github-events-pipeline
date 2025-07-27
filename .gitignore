@@ -1,0 +1,64 @@
+# --- General ---
+# Environment variables file - VERY IMPORTANT to ignore
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE and editor configuration
+.vscode/
+.idea/
+
+# --- Python ---
+# Byte-compiled / optimized / C extensions
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# --- Docker ---
+# Ignore local docker-compose overrides
+docker-compose.override.yml
+
+# --- dbt ---
+# dbt packages and compiled artifacts
+dbt_project/my_dbt_project/dbt_packages/
+dbt_project/my_dbt_project/target/
+dbt_project/my_dbt_project/logs/
+
+# Local dbt profiles file which contains secrets
+dbt_project/profiles.yml
+
+# --- Great Expectations ---
+# Uncommitted GX data, including validation results and data docs
+great_expectations/uncommitted/
+
+# --- Local Build Artifacts ---
+# Ignore the wheels folder we created for the offline install
+airflow/gx_wheels/
