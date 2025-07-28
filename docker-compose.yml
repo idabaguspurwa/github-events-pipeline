@@ -61,7 +61,8 @@ services:
       - "8125:8125/udp"
 
   airflow-init:
-    image: idabagusprw/airflow-with-gx:latest # Uses pre-built image
+    build:
+      context: ./airflow
     container_name: airflow-init
     depends_on:
       - postgres-airflow
@@ -72,10 +73,11 @@ services:
       - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres-airflow/airflow
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
     command: >
-      bash -c "airflow db init && airflow users create --username admin --firstname Admin --lastname User --password admin --role Admin --email admin@example.com"
+      bash -c "airflow db init && airflow users create --username admin --password admin --role Admin"
 
   airflow-webserver:
-    image: idabagusprw/airflow-with-gx:latest # Uses pre-built image
+    build:
+      context: ./airflow
     container_name: airflow-webserver
     restart: always
     depends_on:
@@ -88,6 +90,8 @@ services:
       - ./airflow/plugins:/opt/airflow/plugins
       - ./dbt_project:/opt/airflow/dbt_project
       - ./great_expectations:/opt/airflow/great_expectations
+      - /c/Users/idaba/.kube:/home/airflow/.kube:ro
+      - /c/Users/idaba/.kube/config_for_airflow:/opt/airflow/kube_config:ro
     env_file:
       - .env
     environment:
@@ -100,7 +104,8 @@ services:
     command: airflow webserver
 
   airflow-scheduler:
-    image: idabagusprw/airflow-with-gx:latest # Uses pre-built image
+    build:
+      context: ./airflow
     container_name: airflow-scheduler
     restart: always
     depends_on:
@@ -111,6 +116,8 @@ services:
       - ./airflow/plugins:/opt/airflow/plugins
       - ./dbt_project:/opt/airflow/dbt_project
       - ./great_expectations:/opt/airflow/great_expectations
+      - /c/Users/idaba/.kube:/home/airflow/.kube:ro
+      - /c/Users/idaba/.kube/config_for_airflow:/opt/airflow/kube_config:ro
     env_file:
       - .env
     environment:

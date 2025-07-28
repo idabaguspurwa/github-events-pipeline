@@ -1,0 +1,8 @@
+# great_expectations/great_expectations.yml
+config_version: 3.0
+datasources:
+  snowflake_ds:
+    connection_string: snowflake://${SNOWFLAKE_USER}:${SNOWFLAKE_PASSWORD}@${SNOWFLAKE_ACCOUNT}/${SNOWFLAKE_DATABASE}/RAW?warehouse=${SNOWFLAKE_WAREHOUSE}&role=${SNOWFLAKE_ROLE}
+    type: sql
+
+data_context_id: a-unique-id-for-your-project

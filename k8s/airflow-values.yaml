@@ -1,0 +1,28 @@
+# k8s/airflow-values.yaml
+executor: KubernetesExecutor
+
+dags:
+  gitSync:
+    enabled: true
+    repo: https://github.com/idabaguspurwa/github-events-pipeline.git
+    branch: main
+    subPath: "airflow/dags" # Tell git-sync to look in this subfolder for DAGs
+
+# Use the same Airflow image we built before, which has all dependencies
+images:
+  airflow:
+    repository: idabagusprw/airflow-with-gx
+    tag: latest
+
+# Tell Kubernetes how to log in to DockerHub to pull the image
+imagePullSecrets:
+  - name: dockerhub-creds
+
+# Connect to the Postgres database that the chart will create for us
+postgresql:
+  enabled: true
+
+# Webserver service configuration
+webserver:
+  service:
+    type: NodePort

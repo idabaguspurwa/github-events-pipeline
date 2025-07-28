@@ -1,0 +1,91 @@
+[2025-07-28T13:48:53.373+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: github_events_elt_pipeline.extract_and_load_to_staging manual__2025-07-27T19:40:46.201979+00:00 [queued]>
+[2025-07-28T13:48:53.398+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: github_events_elt_pipeline.extract_and_load_to_staging manual__2025-07-27T19:40:46.201979+00:00 [queued]>
+[2025-07-28T13:48:53.399+0000] {taskinstance.py:2193} INFO - Starting attempt 13 of 13
+[2025-07-28T13:48:53.427+0000] {taskinstance.py:2217} INFO - Executing <Task(KubernetesPodOperator): extract_and_load_to_staging> on 2025-07-27 19:40:46.201979+00:00
+[2025-07-28T13:48:53.441+0000] {standard_task_runner.py:60} INFO - Started process 189 to run task
+[2025-07-28T13:48:53.453+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'github_events_elt_pipeline', 'extract_and_load_to_staging', 'manual__2025-07-27T19:40:46.201979+00:00', '--job-id', '58', '--raw', '--subdir', 'DAGS_FOLDER/github_events_elt_pipeline.py', '--cfg-path', '/tmp/tmp5ssl3rr_']
+[2025-07-28T13:48:53.463+0000] {standard_task_runner.py:88} INFO - Job 58: Subtask extract_and_load_to_staging
+[2025-07-28T13:48:53.502+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/***/settings.py:194 DeprecationWarning: The sql_alchemy_conn option in [core] has been moved to the sql_alchemy_conn option in [database] - the old setting has been used, but please update your config.
+[2025-07-28T13:48:53.598+0000] {task_command.py:423} INFO - Running <TaskInstance: github_events_elt_pipeline.extract_and_load_to_staging manual__2025-07-27T19:40:46.201979+00:00 [running]> on host 27ea3cb9cc38
+[2025-07-28T13:48:53.842+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='github_events_elt_pipeline' AIRFLOW_CTX_TASK_ID='extract_and_load_to_staging' AIRFLOW_CTX_EXECUTION_DATE='2025-07-27T19:40:46.201979+00:00' AIRFLOW_CTX_TRY_NUMBER='13' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-07-27T19:40:46.201979+00:00'
+[2025-07-28T13:48:53.867+0000] {pod.py:1076} INFO - Building pod kafka-consumer-pod-qdasrh4g with labels: {'dag_id': 'github_events_elt_pipeline', 'task_id': 'extract_and_load_to_staging', 'run_id': 'manual__2025-07-27T194046.2019790000-fccb62a8d', 'kubernetes_pod_operator': 'True', 'try_number': '13'}
+[2025-07-28T13:51:03.129+0000] {connectionpool.py:872} WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x7f578ec22ad0>, 'Connection to 192.168.49.2 timed out. (connect timeout=None)')': /api/v1/namespaces/default/pods?labelSelector=dag_id%3Dgithub_events_elt_pipeline%2Ckubernetes_pod_operator%3DTrue%2Crun_id%3Dmanual__2025-07-27T194046.2019790000-fccb62a8d%2Ctask_id%3Dextract_and_load_to_staging%2Calready_checked%21%3DTrue%2C%21***-worker
+[2025-07-28T13:53:16.239+0000] {connectionpool.py:872} WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x7f578ec22380>, 'Connection to 192.168.49.2 timed out. (connect timeout=None)')': /api/v1/namespaces/default/pods?labelSelector=dag_id%3Dgithub_events_elt_pipeline%2Ckubernetes_pod_operator%3DTrue%2Crun_id%3Dmanual__2025-07-27T194046.2019790000-fccb62a8d%2Ctask_id%3Dextract_and_load_to_staging%2Calready_checked%21%3DTrue%2C%21***-worker
+[2025-07-28T13:55:29.349+0000] {connectionpool.py:872} WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x7f578ec23a30>, 'Connection to 192.168.49.2 timed out. (connect timeout=None)')': /api/v1/namespaces/default/pods?labelSelector=dag_id%3Dgithub_events_elt_pipeline%2Ckubernetes_pod_operator%3DTrue%2Crun_id%3Dmanual__2025-07-27T194046.2019790000-fccb62a8d%2Ctask_id%3Dextract_and_load_to_staging%2Calready_checked%21%3DTrue%2C%21***-worker
+[2025-07-28T13:57:42.461+0000] {taskinstance.py:2731} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/connection.py", line 203, in _new_conn
+    sock = connection.create_connection(
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/util/connection.py", line 85, in create_connection
+    raise err
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/util/connection.py", line 73, in create_connection
+    sock.connect(sa)
+TimeoutError: [Errno 110] Connection timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/connectionpool.py", line 791, in urlopen
+    response = self._make_request(
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/connectionpool.py", line 492, in _make_request
+    raise new_e
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/connectionpool.py", line 468, in _make_request
+    self._validate_conn(conn)
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1097, in _validate_conn
+    conn.connect()
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/connection.py", line 611, in connect
+    self.sock = sock = self._new_conn()
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/connection.py", line 212, in _new_conn
+    raise ConnectTimeoutError(
+urllib3.exceptions.ConnectTimeoutError: (<urllib3.connection.HTTPSConnection object at 0x7f578ec23c70>, 'Connection to 192.168.49.2 timed out. (connect timeout=None)')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/models/taskinstance.py", line 444, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/models/taskinstance.py", line 414, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/providers/cncf/kubernetes/operators/pod.py", line 578, in execute
+    return self.execute_sync(context)
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/providers/cncf/kubernetes/operators/pod.py", line 586, in execute_sync
+    self.pod = self.get_or_create_pod(  # must set `self.pod` for `on_kill`
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/providers/cncf/kubernetes/operators/pod.py", line 542, in get_or_create_pod
+    pod = self.find_pod(self.namespace or pod_request_obj.metadata.namespace, context=context)
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/providers/cncf/kubernetes/operators/pod.py", line 524, in find_pod
+    pod_list = self.client.list_namespaced_pod(
+  File "/home/airflow/.local/lib/python3.10/site-packages/kubernetes/client/api/core_v1_api.py", line 15823, in list_namespaced_pod
+    return self.list_namespaced_pod_with_http_info(namespace, **kwargs)  # noqa: E501
+  File "/home/airflow/.local/lib/python3.10/site-packages/kubernetes/client/api/core_v1_api.py", line 15942, in list_namespaced_pod_with_http_info
+    return self.api_client.call_api(
+  File "/home/airflow/.local/lib/python3.10/site-packages/kubernetes/client/api_client.py", line 348, in call_api
+    return self.__call_api(resource_path, method,
+  File "/home/airflow/.local/lib/python3.10/site-packages/kubernetes/client/api_client.py", line 180, in __call_api
+    response_data = self.request(
+  File "/home/airflow/.local/lib/python3.10/site-packages/kubernetes/client/api_client.py", line 373, in request
+    return self.rest_client.GET(url,
+  File "/home/airflow/.local/lib/python3.10/site-packages/kubernetes/client/rest.py", line 244, in GET
+    return self.request("GET", url,
+  File "/home/airflow/.local/lib/python3.10/site-packages/kubernetes/client/rest.py", line 217, in request
+    r = self.pool_manager.request(method, url,
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/_request_methods.py", line 110, in request
+    return self.request_encode_url(
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/_request_methods.py", line 143, in request_encode_url
+    return self.urlopen(method, url, **extra_kw)
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/poolmanager.py", line 443, in urlopen
+    response = conn.urlopen(method, u.request_uri, **kw)
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/connectionpool.py", line 875, in urlopen
+    return self.urlopen(
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/connectionpool.py", line 875, in urlopen
+    return self.urlopen(
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/connectionpool.py", line 875, in urlopen
+    return self.urlopen(
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/connectionpool.py", line 845, in urlopen
+    retries = retries.increment(
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/util/retry.py", line 515, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='192.168.49.2', port=60684): Max retries exceeded with url: /api/v1/namespaces/default/pods?labelSelector=dag_id%3Dgithub_events_elt_pipeline%2Ckubernetes_pod_operator%3DTrue%2Crun_id%3Dmanual__2025-07-27T194046.2019790000-fccb62a8d%2Ctask_id%3Dextract_and_load_to_staging%2Calready_checked%21%3DTrue%2C%21***-worker (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x7f578ec23c70>, 'Connection to 192.168.49.2 timed out. (connect timeout=None)'))
+[2025-07-28T13:57:42.497+0000] {taskinstance.py:1149} INFO - Marking task as FAILED. dag_id=github_events_elt_pipeline, task_id=extract_and_load_to_staging, execution_date=20250727T194046, start_date=20250728T134853, end_date=20250728T135742
+[2025-07-28T13:57:42.516+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 58 for task extract_and_load_to_staging (HTTPSConnectionPool(host='192.168.49.2', port=60684): Max retries exceeded with url: /api/v1/namespaces/default/pods?labelSelector=dag_id%3Dgithub_events_elt_pipeline%2Ckubernetes_pod_operator%3DTrue%2Crun_id%3Dmanual__2025-07-27T194046.2019790000-fccb62a8d%2Ctask_id%3Dextract_and_load_to_staging%2Calready_checked%21%3DTrue%2C%21***-worker (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x7f578ec23c70>, 'Connection to 192.168.49.2 timed out. (connect timeout=None)')); 189)
+[2025-07-28T13:57:42.561+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 1
+[2025-07-28T13:57:42.592+0000] {taskinstance.py:3312} INFO - 0 downstream tasks scheduled from follow-on schedule check

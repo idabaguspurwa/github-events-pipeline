@@ -1,0 +1,92 @@
+[2025-07-28T16:13:59.619+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: github_events_elt_pipeline.extract_and_load_to_staging manual__2025-07-27T19:40:46.201979+00:00 [queued]>
+[2025-07-28T16:13:59.628+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: github_events_elt_pipeline.extract_and_load_to_staging manual__2025-07-27T19:40:46.201979+00:00 [queued]>
+[2025-07-28T16:13:59.629+0000] {taskinstance.py:2193} INFO - Starting attempt 18 of 18
+[2025-07-28T16:13:59.649+0000] {taskinstance.py:2217} INFO - Executing <Task(KubernetesPodOperator): extract_and_load_to_staging> on 2025-07-27 19:40:46.201979+00:00
+[2025-07-28T16:13:59.659+0000] {standard_task_runner.py:60} INFO - Started process 1435 to run task
+[2025-07-28T16:13:59.663+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'github_events_elt_pipeline', 'extract_and_load_to_staging', 'manual__2025-07-27T19:40:46.201979+00:00', '--job-id', '65', '--raw', '--subdir', 'DAGS_FOLDER/github_events_elt_pipeline.py', '--cfg-path', '/tmp/tmpi142f_hu']
+[2025-07-28T16:13:59.667+0000] {standard_task_runner.py:88} INFO - Job 65: Subtask extract_and_load_to_staging
+[2025-07-28T16:13:59.705+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/***/settings.py:194 DeprecationWarning: The sql_alchemy_conn option in [core] has been moved to the sql_alchemy_conn option in [database] - the old setting has been used, but please update your config.
+[2025-07-28T16:13:59.768+0000] {task_command.py:423} INFO - Running <TaskInstance: github_events_elt_pipeline.extract_and_load_to_staging manual__2025-07-27T19:40:46.201979+00:00 [running]> on host 27ea3cb9cc38
+[2025-07-28T16:13:59.933+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='github_events_elt_pipeline' AIRFLOW_CTX_TASK_ID='extract_and_load_to_staging' AIRFLOW_CTX_EXECUTION_DATE='2025-07-27T19:40:46.201979+00:00' AIRFLOW_CTX_TRY_NUMBER='18' AIRFLOW_CTX_DAG_RUN_ID='manual__2025-07-27T19:40:46.201979+00:00'
+[2025-07-28T16:13:59.949+0000] {pod.py:1076} INFO - Building pod kafka-consumer-pod-a5ynb3pb with labels: {'dag_id': 'github_events_elt_pipeline', 'task_id': 'extract_and_load_to_staging', 'run_id': 'manual__2025-07-27T194046.2019790000-fccb62a8d', 'kubernetes_pod_operator': 'True', 'try_number': '18'}
+[2025-07-28T16:14:00.014+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:14:00.040+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:14:00.137+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:14:00.164+0000] {pod.py:535} INFO - Found matching pod kafka-consumer-pod-a5ynb3pb with labels {'airflow_kpo_in_cluster': 'False', 'airflow_version': '2.8.4', 'dag_id': 'github_events_elt_pipeline', 'kubernetes_pod_operator': 'True', 'run_id': 'manual__2025-07-27T194046.2019790000-fccb62a8d', 'task_id': 'extract_and_load_to_staging', 'try_number': '18'}
+[2025-07-28T16:14:00.166+0000] {pod.py:536} INFO - `try_number` of task_instance: 18
+[2025-07-28T16:14:00.167+0000] {pod.py:537} INFO - `try_number` of pod: 18
+[2025-07-28T16:14:00.173+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:14:00.203+0000] {pod_manager.py:374} WARNING - Pod not yet started: kafka-consumer-pod-a5ynb3pb
+[2025-07-28T16:14:05.211+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:14:05.227+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:14:05.241+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:14:05.262+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:19:05.331+0000] {pod_manager.py:484} INFO - [base] None
+[2025-07-28T16:19:05.349+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:19:05.363+0000] {pod_manager.py:512} WARNING - Pod kafka-consumer-pod-a5ynb3pb log read interrupted but container base still running
+[2025-07-28T16:19:06.367+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:19:06.389+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:24:06.435+0000] {pod_manager.py:484} INFO - [base] None
+[2025-07-28T16:24:06.451+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:24:06.462+0000] {pod_manager.py:512} WARNING - Pod kafka-consumer-pod-a5ynb3pb log read interrupted but container base still running
+[2025-07-28T16:24:07.466+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:24:07.486+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:29:07.548+0000] {pod_manager.py:484} INFO - [base] None
+[2025-07-28T16:29:07.563+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:29:07.574+0000] {pod_manager.py:512} WARNING - Pod kafka-consumer-pod-a5ynb3pb log read interrupted but container base still running
+[2025-07-28T16:29:08.577+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:29:08.597+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:34:08.692+0000] {pod_manager.py:484} INFO - [base] None
+[2025-07-28T16:34:08.713+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:34:08.724+0000] {pod_manager.py:512} WARNING - Pod kafka-consumer-pod-a5ynb3pb log read interrupted but container base still running
+[2025-07-28T16:34:09.727+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:34:09.748+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:39:09.822+0000] {pod_manager.py:484} INFO - [base] None
+[2025-07-28T16:39:09.835+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:39:09.845+0000] {pod_manager.py:512} WARNING - Pod kafka-consumer-pod-a5ynb3pb log read interrupted but container base still running
+[2025-07-28T16:39:10.849+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:39:10.872+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:40:49.204+0000] {local_task_job_runner.py:121} ERROR - Received SIGTERM. Terminating subprocesses
+[2025-07-28T16:40:49.225+0000] {process_utils.py:131} INFO - Sending 15 to group 1435. PIDs of all processes in the group: [1435]
+[2025-07-28T16:40:49.234+0000] {process_utils.py:86} INFO - Sending the signal 15 to group 1435
+[2025-07-28T16:40:49.263+0000] {taskinstance.py:2483} ERROR - Received SIGTERM. Terminating subprocesses.
+[2025-07-28T16:40:49.340+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.10/site-packages/urllib3/connectionpool.py:1100 InsecureRequestWarning: Unverified HTTPS request is being made to host 'host.docker.internal'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+[2025-07-28T16:40:49.369+0000] {pod_manager.py:484} INFO - [base] None
+[2025-07-28T16:40:49.396+0000] {taskinstance.py:2731} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/models/taskinstance.py", line 444, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/models/taskinstance.py", line 414, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/providers/cncf/kubernetes/operators/pod.py", line 578, in execute
+    return self.execute_sync(context)
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/providers/cncf/kubernetes/operators/pod.py", line 610, in execute_sync
+    self.pod_manager.fetch_requested_container_logs(
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/providers/cncf/kubernetes/utils/pod_manager.py", line 581, in fetch_requested_container_logs
+    status = self.fetch_container_logs(pod=pod, container_name=c, follow=follow_logs)
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/providers/cncf/kubernetes/utils/pod_manager.py", line 504, in fetch_container_logs
+    last_log_time, exc = consume_logs(since_time=last_log_time)
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/providers/cncf/kubernetes/utils/pod_manager.py", line 451, in consume_logs
+    for raw_line in logs:
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/providers/cncf/kubernetes/utils/pod_manager.py", line 241, in __iter__
+    for data_chunk in self.response.stream(amt=None, decode_content=True):
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/response.py", line 933, in stream
+    yield from self.read_chunked(amt, decode_content=decode_content)
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/response.py", line 1073, in read_chunked
+    self._update_chunk_length()
+  File "/home/airflow/.local/lib/python3.10/site-packages/urllib3/response.py", line 1001, in _update_chunk_length
+    line = self._fp.fp.readline()  # type: ignore[union-attr]
+  File "/usr/local/lib/python3.10/socket.py", line 705, in readinto
+    return self._sock.recv_into(b)
+  File "/usr/local/lib/python3.10/ssl.py", line 1307, in recv_into
+    return self.read(nbytes, buffer)
+  File "/usr/local/lib/python3.10/ssl.py", line 1163, in read
+    return self._sslobj.read(len, buffer)
+  File "/home/airflow/.local/lib/python3.10/site-packages/airflow/models/taskinstance.py", line 2485, in signal_handler
+    raise AirflowException("Task received SIGTERM signal")
+airflow.exceptions.AirflowException: Task received SIGTERM signal
+[2025-07-28T16:40:49.409+0000] {taskinstance.py:1149} INFO - Marking task as FAILED. dag_id=github_events_elt_pipeline, task_id=extract_and_load_to_staging, execution_date=20250727T194046, start_date=20250728T161359, end_date=20250728T164049
+[2025-07-28T16:40:49.438+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 65 for task extract_and_load_to_staging (Task received SIGTERM signal; 1435)
+[2025-07-28T16:40:49.456+0000] {process_utils.py:79} INFO - Process psutil.Process(pid=1435, status='terminated', exitcode=1, started='16:13:59') (1435) terminated with exit code 1
+[2025-07-28T16:40:49.459+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 143
+[2025-07-28T16:40:49.502+0000] {taskinstance.py:3312} INFO - 0 downstream tasks scheduled from follow-on schedule check
