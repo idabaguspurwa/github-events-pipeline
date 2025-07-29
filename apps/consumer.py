@@ -8,6 +8,8 @@ import snowflake.connector
 # --- Config ---
 KAFKA_BROKER = os.environ.get("KAFKA_BROKER")
 KAFKA_TOPIC = "github_events"
+
+# CORRECTED: Use the standard environment variables provided by the Airflow connection secret
 SNOWFLAKE_CONFIG = {
     "user": os.environ.get("SNOWFLAKE_USER"),
     "password": os.environ.get("SNOWFLAKE_PASSWORD"),
@@ -15,12 +17,12 @@ SNOWFLAKE_CONFIG = {
     "warehouse": os.environ.get("SNOWFLAKE_WAREHOUSE"),
     "database": os.environ.get("SNOWFLAKE_DATABASE"),
     "schema": "RAW",
+    "role": os.environ.get("SNOWFLAKE_ROLE"),
 }
-# NEW: Set a fixed run duration for the consumer
 RUN_DURATION_SECONDS = 300 # 5 minutes
 
+# (The get_kafka_consumer function remains the same)
 def get_kafka_consumer():
-    # This function remains the same
     while True:
         try:
             consumer = KafkaConsumer(
@@ -39,6 +41,12 @@ def get_kafka_consumer():
 
 def main():
     print("--- Starting Consumer ---")
+    
+    # Check for missing Snowflake credentials
+    for key, value in SNOWFLAKE_CONFIG.items():
+        if not value and key != "schema": # schema is hardcoded
+             raise ValueError(f"Missing required environment variable for Snowflake connection: {key.upper()}")
+
     consumer = get_kafka_consumer()
     conn = snowflake.connector.connect(**SNOWFLAKE_CONFIG)
     print("Successfully connected to Snowflake.")
@@ -49,13 +57,10 @@ def main():
 
     print(f"Consumer will run for {RUN_DURATION_SECONDS} seconds.")
 
-    # This loop will now stop after 5 minutes
     while time.time() - start_time < RUN_DURATION_SECONDS:
-        # Poll for messages with a 1-second timeout
         records = consumer.poll(timeout_ms=1000, max_records=batch_size)
         
         if not records:
-            # If no records, just continue the loop to check the timer
             continue
 
         for topic_partition, messages in records.items():
