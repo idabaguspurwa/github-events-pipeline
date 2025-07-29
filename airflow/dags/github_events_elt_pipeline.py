@@ -32,7 +32,7 @@ except Exception:
 
 # --- Environment Variables for the Kafka consumer ---
 k8s_env_vars = {
-    "KAFKA_BROKER": "host.minikube.internal:9092",
+    "KAFKA_BROKER": "kafka-headless.default.svc.cluster.local:9092",
     "SNOWFLAKE_USER": snowflake_conn.login,
     "SNOWFLAKE_PASSWORD": snowflake_conn.get_password(),
     "SNOWFLAKE_ACCOUNT": snowflake_conn.host,
