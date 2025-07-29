@@ -64,7 +64,7 @@ with DAG(
     extract_and_load = KubernetesPodOperator(
         task_id="extract_and_load_to_staging",
         name="kafka-consumer-pod",
-        namespace="default",
+        namespace="airflow",
         image="github-consumer:v1",
         image_pull_policy="IfNotPresent",
         cmds=["python", "consumer.py"],
