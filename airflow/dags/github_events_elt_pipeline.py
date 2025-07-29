@@ -70,7 +70,7 @@ with DAG(
             )
         ],
         env_vars={
-             "KAFKA_BROKER": "kafka-headless.default.svc.cluster.local:9092",
+             "KAFKA_BROKER": "kafka-headless:9092",
         },
         # ---------------------------------
         in_cluster=True,
