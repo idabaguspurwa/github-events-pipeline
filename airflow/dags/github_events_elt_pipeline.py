@@ -72,10 +72,10 @@ with DAG(
         image_pull_policy="IfNotPresent",
         cmds=["python", "consumer.py"],
         env_vars=k8s_env_vars,
-        config_file="/opt/airflow/kube_config",
-        in_cluster=False,
+        in_cluster=True,           # Use in-cluster auth
+        config_file=None,          # Must be None for in-cluster
         kubernetes_conn_id=None,
-        is_delete_operator_pod=False, # Keep the pod after execution
+        is_delete_operator_pod=False,
     )
 
     # Task 2: Run Great Expectations via Python
