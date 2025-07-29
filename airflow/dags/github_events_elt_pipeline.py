@@ -6,12 +6,13 @@ from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import Kubernete
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.hooks.base import BaseHook
-
+from kubernetes.client import models as k8s
 
 # --- Great Expectations Check Function ---
 def run_great_expectations():
     import great_expectations as ge
-    context = ge.data_context.DataContext("/opt/airflow/great_expectations")
+    # Note: The path inside the worker pod will be based on where git-sync clones the repo
+    context = ge.data_context.DataContext("/opt/airflow/dags/repo/great_expectations")
     results = context.run_checkpoint(checkpoint_name="raw_events_checkpoint")
     if not results["success"]:
         raise ValueError("Great Expectations checkpoint failed")
@@ -30,16 +31,6 @@ except Exception:
     })()
     snowflake_extra = {}
 
-# --- Environment Variables for the Kafka consumer ---
-k8s_env_vars = {
-    "KAFKA_BROKER": "kafka-headless.default.svc.cluster.local:9092",
-    "SNOWFLAKE_USER": snowflake_conn.login,
-    "SNOWFLAKE_PASSWORD": snowflake_conn.get_password(),
-    "SNOWFLAKE_ACCOUNT": snowflake_conn.host,
-    "SNOWFLAKE_WAREHOUSE": snowflake_extra.get("warehouse"),
-    "SNOWFLAKE_DATABASE": snowflake_extra.get("database"),
-    "SNOWFLAKE_ROLE": snowflake_extra.get("role"),
-}
 
 # --- Environment Variables for dbt ---
 dbt_env = {
@@ -71,9 +62,19 @@ with DAG(
         image="github-consumer:v1",
         image_pull_policy="IfNotPresent",
         cmds=["python", "consumer.py"],
-        env_vars=k8s_env_vars,
-        in_cluster=True,           # Use in-cluster auth
-        config_file=None,          # Must be None for in-cluster
+        env_from=[
+            k8s.V1EnvFromSource(
+                secret_ref=k8s.V1SecretKeySelector(
+                    name="airflow-conn-snowflake-default",
+                )
+            )
+        ],
+        env_vars={
+             "KAFKA_BROKER": "kafka-headless.default.svc.cluster.local:9092",
+        },
+        # ---------------------------------
+        in_cluster=True,
+        config_file=None,
         kubernetes_conn_id=None,
         is_delete_operator_pod=False,
     )
@@ -88,8 +89,8 @@ with DAG(
     dbt_transform = BashOperator(
         task_id="dbt_transform",
         bash_command=(
-            "dbt run --profiles-dir /opt/airflow/dbt_project "
-            "--project-dir /opt/airflow/dbt_project/my_dbt_project"
+            "dbt run --profiles-dir /opt/airflow/dags/repo/dbt_project "
+            "--project-dir /opt/airflow/dags/repo/dbt_project/my_dbt_project"
         ),
         env=dbt_env,
     )
@@ -98,8 +99,8 @@ with DAG(
     dbt_test = BashOperator(
         task_id="dbt_test",
         bash_command=(
-            "dbt test --profiles-dir /opt/airflow/dbt_project "
-            "--project-dir /opt/airflow/dbt_project/my_dbt_project"
+            "dbt test --profiles-dir /opt/airflow/dags/repo/dbt_project "
+            "--project-dir /opt/airflow/dags/repo/dbt_project/my_dbt_project"
         ),
         env=dbt_env,
     )
