@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from airflow.models.dag import DAG
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
@@ -62,6 +62,9 @@ with DAG(
 ) as dag:
     # Task 1: Extract and load to Snowflake
     extract_and_load = KubernetesPodOperator(
+        execution_timeout=timedelta(minutes=30),
+        get_logs=False,
+        startup_timeout_seconds=300,
         task_id="extract_and_load_to_staging",
         name="kafka-consumer-pod",
         namespace="airflow",
