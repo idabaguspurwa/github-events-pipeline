@@ -72,7 +72,7 @@ with DAG(
         config_file="/opt/airflow/kube_config",
         in_cluster=False,
         kubernetes_conn_id=None,
-        is_delete_operator_pod=True,
+        is_delete_operator_pod=False,
     )
 
     # Task 2: Run Great Expectations via Python

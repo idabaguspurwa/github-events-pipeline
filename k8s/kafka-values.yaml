@@ -1,0 +1,6 @@
+# k8s/kafka-values.yaml
+metrics:
+  jmx:
+    enabled: true
+  prometheus:
+    enabled: true

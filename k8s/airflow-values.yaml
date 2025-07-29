@@ -21,8 +21,18 @@ imagePullSecrets:
 # Connect to the Postgres database that the chart will create for us
 postgresql:
   enabled: true
+  volumePermissions:
+    enabled: true
+
+statsd:
+  enabled: true
 
 # Webserver service configuration
 webserver:
   service:
     type: NodePort
+
+dnsConfig:
+  nameservers:
+    - "8.8.8.8"
+    - "8.8.4.4"
