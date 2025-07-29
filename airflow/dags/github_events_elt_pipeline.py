@@ -64,7 +64,7 @@ with DAG(
         cmds=["python", "consumer.py"],
         env_from=[
             k8s.V1EnvFromSource(
-                secret_ref=k8s.V1SecretKeySelector(
+                secret_ref=k8s.V1SecretEnvSource(
                     name="airflow-conn-snowflake-default",
                 )
             )
