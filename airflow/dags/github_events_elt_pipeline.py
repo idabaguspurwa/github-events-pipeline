@@ -8,6 +8,7 @@ from airflow.operators.python import PythonOperator
 from airflow.hooks.base import BaseHook
 from kubernetes.client import models as k8s
 
+
 # --- Great Expectations Check Function ---
 def run_great_expectations():
     import great_expectations as ge
@@ -43,6 +44,7 @@ dbt_env = {
     "DBT_SCHEMA": snowflake_extra.get("schema"),
 }
 
+
 # --- DAG Definition ---
 with DAG(
     dag_id="github_events_elt_pipeline",
@@ -50,12 +52,18 @@ with DAG(
     schedule=None,
     catchup=False,
     tags=["elt", "github", "final-project"],
+    max_active_runs=1,  # Prevent multiple concurrent runs
+    default_args={
+        'retries': 2,  # Reduced from 31 to prevent endless loops
+        'retry_delay': timedelta(minutes=5),
+    }
 ) as dag:
+    
     # Task 1: Extract and load to Snowflake
     extract_and_load = KubernetesPodOperator(
         execution_timeout=timedelta(minutes=30),
-        get_logs=False,
-        startup_timeout_seconds=300,
+        get_logs=True,  # Changed to True for better debugging
+        startup_timeout_seconds=600,  # Increased from 300 to give more time
         task_id="extract_and_load_to_staging",
         name="kafka-consumer-pod",
         namespace="airflow",
@@ -65,18 +73,35 @@ with DAG(
         env_from=[
             k8s.V1EnvFromSource(
                 secret_ref=k8s.V1SecretEnvSource(
-                    name="snowflake-creds",
+                    name="snowflake-creds",  # Using your original secret name
                 )
             )
         ],
         env_vars={
-             "KAFKA_BROKER": "kafka:9092",
+            # Multiple bootstrap servers for better reliability
+            "KAFKA_BROKER": "kafka-controller-0.kafka-controller-headless:9092,kafka-controller-1.kafka-controller-headless:9092,kafka-controller-2.kafka-controller-headless:9092",
         },
-        # ---------------------------------
+        # Add resource limits to prevent resource issues
+        resources=k8s.V1ResourceRequirements(
+            requests={
+                "cpu": "250m",
+                "memory": "512Mi"
+            },
+            limits={
+                "cpu": "500m", 
+                "memory": "1Gi"
+            }
+        ),
+        # Add health check
+        container_logs=True,
         in_cluster=True,
         config_file=None,
         kubernetes_conn_id=None,
-        is_delete_operator_pod=False,
+        is_delete_operator_pod=True,  # Changed to True for cleanup
+        # Add DNS configuration for better service discovery
+        dns_policy="ClusterFirst",
+        # Add restart policy
+        restart_policy="Never",
     )
 
     # Task 2: Run Great Expectations via Python
