@@ -92,16 +92,10 @@ with DAG(
                 "memory": "1Gi"
             }
         ),
-        # Add health check
-        container_logs=True,
         in_cluster=True,
         config_file=None,
         kubernetes_conn_id=None,
         is_delete_operator_pod=True,  # Changed to True for cleanup
-        # Add DNS configuration for better service discovery
-        dns_policy="ClusterFirst",
-        # Add restart policy
-        restart_policy="Never",
     )
 
     # Task 2: Run Great Expectations via Python
