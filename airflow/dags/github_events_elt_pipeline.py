@@ -81,8 +81,8 @@ with DAG(
             # Multiple bootstrap servers for better reliability
             "KAFKA_BROKER": "kafka-controller-0.kafka-controller-headless:9092,kafka-controller-1.kafka-controller-headless:9092,kafka-controller-2.kafka-controller-headless:9092",
         },
-        # Add resource limits to prevent resource issues
-        resources=k8s.V1ResourceRequirements(
+        # Correct resource format for KubernetesPodOperator
+        container_resources=k8s.V1ResourceRequirements(
             requests={
                 "cpu": "250m",
                 "memory": "512Mi"
