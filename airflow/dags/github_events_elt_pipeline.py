@@ -61,9 +61,9 @@ with DAG(
     
     # Task 1: Extract and load to Snowflake
     extract_and_load = KubernetesPodOperator(
-        execution_timeout=timedelta(minutes=30),
-        get_logs=True,  # Changed to True for better debugging
-        startup_timeout_seconds=600,  # Increased from 300 to give more time
+        execution_timeout=timedelta(minutes=10),
+        get_logs=True, 
+        startup_timeout_seconds=300,
         task_id="extract_and_load_to_staging",
         name="kafka-consumer-pod",
         namespace="airflow",
@@ -95,7 +95,8 @@ with DAG(
         in_cluster=True,
         config_file=None,
         kubernetes_conn_id=None,
-        is_delete_operator_pod=True,  # Changed to True for cleanup
+        is_delete_operator_pod=True,
+        do_xcom_push=False,
     )
 
     # Task 2: Run Great Expectations via Python
