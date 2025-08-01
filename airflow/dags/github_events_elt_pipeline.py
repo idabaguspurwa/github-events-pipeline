@@ -31,7 +31,7 @@ except Exception:
         'login': '', 
         'password': '', 
         'host': '', 
-        'get_password': lambda: ''
+        'get_password': lambda self: ''  # Fixed: added 'self' parameter
     })()
     snowflake_extra = {}
 
