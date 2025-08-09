@@ -390,37 +390,83 @@ with DAG(
     # === TRANSFORMATION PHASE ===
     with TaskGroup("transformation_phase", dag=dag) as transformation_group:
         
-        # Task 5: Run dbt transformations
+        # Task 5: Run dbt transformations with real Snowflake data
         dbt_transform = BashOperator(
             task_id="run_dbt_transformations",
             bash_command=(
-                "echo '🔄 Running dbt transformations...' && "
-                "dbt run --profiles-dir /opt/airflow/dags/repo/dbt_project "
-                "--project-dir /opt/airflow/dags/repo/dbt_project/my_dbt_project"
+                "echo '🔄 Preparing dbt environment for real-time data transformations...' && "
+                "echo 'Checking for dbt installation...' && "
+                "which dbt || (echo '📦 Installing dbt-snowflake...' && pip install dbt-snowflake) && "
+                "echo '🔍 Verifying dbt installation...' && "
+                "dbt --version && "
+                "echo '📁 Checking dbt project structure...' && "
+                "ls -la /opt/airflow/dags/repo/dbt_project/ && "
+                "echo '🏗️ Setting up dbt profiles...' && "
+                "mkdir -p ~/.dbt && "
+                "echo 'my_dbt_project:' > ~/.dbt/profiles.yml && "
+                "echo '  outputs:' >> ~/.dbt/profiles.yml && "
+                "echo '    prod:' >> ~/.dbt/profiles.yml && "
+                "echo '      type: snowflake' >> ~/.dbt/profiles.yml && "
+                "echo '      account: $SNOWFLAKE_ACCOUNT' >> ~/.dbt/profiles.yml && "
+                "echo '      user: $SNOWFLAKE_USER' >> ~/.dbt/profiles.yml && "
+                "echo '      password: $SNOWFLAKE_PASSWORD' >> ~/.dbt/profiles.yml && "
+                "echo '      database: $SNOWFLAKE_DATABASE' >> ~/.dbt/profiles.yml && "
+                "echo '      warehouse: $SNOWFLAKE_WAREHOUSE' >> ~/.dbt/profiles.yml && "
+                "echo '      schema: ANALYTICS' >> ~/.dbt/profiles.yml && "
+                "echo '      role: $SNOWFLAKE_ROLE' >> ~/.dbt/profiles.yml && "
+                "echo '  target: prod' >> ~/.dbt/profiles.yml && "
+                "echo '🔄 Running dbt transformations on real-time GitHub events data...' && "
+                "cd /opt/airflow/dags/repo/dbt_project/my_dbt_project && "
+                "dbt debug && "
+                "dbt run --target prod && "
+                "echo '✅ dbt transformations completed successfully with real data'"
             ),
-            env=dbt_env,
+            # Use environment variables from Snowflake credentials secret
+            env_from=[
+                k8s.V1EnvFromSource(
+                    secret_ref=k8s.V1SecretEnvSource(
+                        name="snowflake-creds",
+                    )
+                )
+            ],
         )
         
-        # Task 6: Run dbt tests
+        # Task 6: Run dbt tests on real transformed data
         dbt_test = BashOperator(
             task_id="run_dbt_tests",
             bash_command=(
-                "echo '🧪 Running dbt tests...' && "
-                "dbt test --profiles-dir /opt/airflow/dags/repo/dbt_project "
-                "--project-dir /opt/airflow/dags/repo/dbt_project/my_dbt_project"
+                "echo '🧪 Running dbt tests on transformed real-time data...' && "
+                "cd /opt/airflow/dags/repo/dbt_project/my_dbt_project && "
+                "dbt test --target prod && "
+                "echo '✅ dbt tests completed - data quality verified'"
             ),
-            env=dbt_env,
+            # Use environment variables from Snowflake credentials secret
+            env_from=[
+                k8s.V1EnvFromSource(
+                    secret_ref=k8s.V1SecretEnvSource(
+                        name="snowflake-creds",
+                    )
+                )
+            ],
         )
         
-        # Task 7: Generate dbt documentation
+        # Task 7: Generate dbt documentation for real data models
         dbt_docs = BashOperator(
             task_id="generate_dbt_documentation",
             bash_command=(
-                "echo '📚 Generating dbt documentation...' && "
-                "dbt docs generate --profiles-dir /opt/airflow/dags/repo/dbt_project "
-                "--project-dir /opt/airflow/dags/repo/dbt_project/my_dbt_project"
+                "echo '📚 Generating dbt documentation for real-time analytics models...' && "
+                "cd /opt/airflow/dags/repo/dbt_project/my_dbt_project && "
+                "dbt docs generate --target prod && "
+                "echo '✅ dbt documentation generated for real data models'"
             ),
-            env=dbt_env,
+            # Use environment variables from Snowflake credentials secret
+            env_from=[
+                k8s.V1EnvFromSource(
+                    secret_ref=k8s.V1SecretEnvSource(
+                        name="snowflake-creds",
+                    )
+                )
+            ],
         )
         
         dbt_transform >> dbt_test >> dbt_docs
