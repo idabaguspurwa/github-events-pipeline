@@ -52,16 +52,7 @@ data:
     pod_template_file = /opt/airflow/pod_templates/pod_template_file.yaml
     worker_container_repository = idabagusprw/airflow-with-gx
     worker_container_tag = latest
-    # Enhanced DNS and networking configuration
     in_cluster = True
-    cluster_context = 
-    config_file = 
-    # Add timeout configurations for better log retrieval
-    startup_timeout_seconds = 120
-    request_memory = 128Mi
-    request_cpu = 100m
-    limit_memory = 512Mi
-    limit_cpu = 500m
 
     [kubernetes_executor]
     multi_namespace_mode = False
@@ -69,37 +60,15 @@ data:
     pod_template_file = /opt/airflow/pod_templates/pod_template_file.yaml
     worker_container_repository = idabagusprw/airflow-with-gx
     worker_container_tag = latest
-    # Enhanced networking for log retrieval
     in_cluster = True
-    cluster_context = 
-    config_file = 
-    # DNS configuration for pod communication
     delete_worker_pods = False
     delete_worker_pods_on_failure = False
 
     [logging]
     colored_console_log = False
     remote_logging = False
-    # Enhanced log reading configuration for Kubernetes
     logging_level = INFO
     fab_logging_level = WARN
-    log_filename_template = {{ ti.dag_id }}/{{ ti.task_id }}/{{ ts }}/{{ try_number }}.log
-    log_processor_filename_template = {{ filename }}.log
-    dag_processor_manager_log_location = /opt/airflow/logs/dag_processor_manager/dag_processor_manager.log
-
-    [kubernetes_executor]
-    multi_namespace_mode = False
-    namespace = airflow
-    pod_template_file = /opt/airflow/pod_templates/pod_template_file.yaml
-    worker_container_repository = idabagusprw/airflow-with-gx
-    worker_container_tag = latest
-    # Enhanced networking for log retrieval
-    in_cluster = True
-    cluster_context = 
-    config_file = 
-    # DNS configuration for pod communication
-    delete_worker_pods = False
-    delete_worker_pods_on_failure = False
 
     [metrics]
     statsd_host = airflow-statsd
@@ -121,18 +90,14 @@ data:
     [webserver]
     enable_proxy_fix = True
     rbac = True
-    # Enhanced configuration for log display and DNS resolution
     expose_config = True
     log_fetch_timeout_sec = 60
-    # Increase timeout for log fetching from pods
-    log_fetch_delay_sec = 2
-    # Enable better error handling for DNS issues
-    reload_on_plugin_change = True
 
   airflow_local_settings.py: |
     from airflow.www.utils import UIAlert
 
     DASHBOARD_UIALERTS = [
+      UIAlert(
         'Usage of a dynamic webserver secret key detected. We recommend a static webserver secret key instead.'
         ' See the <a href='
         '"https://airflow.apache.org/docs/helm-chart/stable/production-guide.html#webserver-secret-key">'
@@ -154,7 +119,7 @@ data:
         component: worker
         release: airflow
     spec:
-      # Add DNS configuration to fix name resolution issues
+      # Enhanced DNS configuration for better name resolution
       dnsPolicy: ClusterFirst
       dnsConfig:
         options:
@@ -224,7 +189,6 @@ data:
                 secretKeyRef:
                   name: airflow-webserver-secret-key
                   key: webserver-secret-key
-            # Extra env
           image: apache/airflow:2.7.1
           imagePullPolicy: IfNotPresent
           securityContext:
@@ -263,6 +227,6 @@ data:
         emptyDir: {}
       - emptyDir: {}
         name: logs
-      - configMap:
+      - name: config
+        configMap:
           name: airflow-config
-        name: config
