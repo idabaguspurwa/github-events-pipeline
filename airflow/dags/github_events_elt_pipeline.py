@@ -294,11 +294,6 @@ with DAG(
                 "FETCH_INTERVAL": "10",  # Fetch every 10 seconds
                 "RUN_DURATION_SECONDS": "300",  # Run for 5 minutes
             },
-            in_cluster=True,
-            config_file=None,
-            kubernetes_conn_id=None,
-            # Critical: Keep pod running longer for log collection
-            is_delete_operator_pod=False,
             container_resources=k8s.V1ResourceRequirements(
                 requests={"memory": "64Mi", "cpu": "50m"},
                 limits={"memory": "256Mi", "cpu": "200m"}
@@ -346,9 +341,6 @@ with DAG(
                 "BATCH_SIZE": "100",
                 "MAX_POLL_RECORDS": "50",
             },
-            in_cluster=True,
-            config_file=None,
-            kubernetes_conn_id=None,
             container_resources=k8s.V1ResourceRequirements(
                 requests={"memory": "128Mi", "cpu": "100m"},
                 limits={"memory": "512Mi", "cpu": "500m"}
