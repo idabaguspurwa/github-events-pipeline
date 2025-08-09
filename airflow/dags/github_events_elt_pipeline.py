@@ -88,13 +88,10 @@ with DAG(
             requests={"memory": "128Mi", "cpu": "100m"},
             limits={"memory": "512Mi", "cpu": "500m"}
         ),
-        # Add DNS configuration to avoid name resolution issues
-        dns_policy="ClusterFirst",
         # Add specific logging configuration
         log_events_on_failure=True,
         get_logs=True,
         # Add timeout configurations
-        task_timeout=timedelta(minutes=10),
         startup_timeout_seconds=300,
     )
 
