@@ -1,0 +1,24 @@
+name: raw_events_checkpoint
+config_version: 1.0
+class_name: Checkpoint
+run_name_template: "%Y%m%d-%H%M%S-raw-events-validation"
+
+validations:
+  - batch_request:
+      datasource_name: snowflake_ds
+      data_connector_name: default_inferred_data_connector_name
+      data_asset_name: raw_events
+      data_connector_query:
+        index: -1
+    expectation_suite_name: raw_events_suite
+
+action_list:
+  - name: store_validation_result
+    action:
+      class_name: StoreValidationResultAction
+  - name: update_data_docs
+    action:
+      class_name: UpdateDataDocsAction
+
+evaluation_parameters: {}
+runtime_configuration: {}
