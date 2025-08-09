@@ -31,7 +31,12 @@ def get_kafka_producer():
             producer = KafkaProducer(
                 bootstrap_servers=[KAFKA_BROKER],
                 value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-                api_version=(2, 0, 2)
+                api_version=(2, 0, 2),
+                # Add SASL authentication
+                security_protocol='SASL_PLAINTEXT',
+                sasl_mechanism='SCRAM-SHA-256',
+                sasl_plain_username='user1',
+                sasl_plain_password='9WDcJnfRut',
             )
             print("Successfully connected to Kafka")
             return producer

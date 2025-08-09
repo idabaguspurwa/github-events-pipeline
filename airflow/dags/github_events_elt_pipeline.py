@@ -61,9 +61,10 @@ with DAG(
         task_id="extract_and_load_to_staging",
         name="kafka-consumer-pod",
         namespace="airflow",
-        image="github-consumer:v1",
+        image="github-consumer:v3",  # Updated to v3 with SASL auth
         image_pull_policy="IfNotPresent",
-        cmds=["python", "consumer.py"],
+        cmds=["sh", "-c"],
+        arguments=["python -u consumer.py 2>&1 | tee /tmp/consumer.log ; exit ${PIPESTATUS[0]}"],
         # Use env_from to reliably mount the manually created 'snowflake-creds' secret
         env_from=[
             k8s.V1EnvFromSource(
@@ -72,15 +73,36 @@ with DAG(
                 )
             )
         ],
-        # Pass the correct, simple Kafka broker address
+        # Pass the correct, simple Kafka broker address and shorter runtime for testing
         env_vars={
              "KAFKA_BROKER": "kafka:9092",
+             "RUN_DURATION_SECONDS": "60",  # Reduced to 60 seconds for testing
         },
         in_cluster=True,
         config_file=None,
         kubernetes_conn_id=None,
         # Keep failed pods for debugging. Change to True in production.
-        is_delete_operator_pod=False, 
+        is_delete_operator_pod=False,
+        # Add resource limits and requests
+        container_resources=k8s.V1ResourceRequirements(
+            requests={"memory": "128Mi", "cpu": "100m"},
+            limits={"memory": "512Mi", "cpu": "500m"}
+        ),
+        # Add startup and liveness probe configuration
+        startup_timeout_seconds=120,
+        get_logs=True,
+        # Add DNS configuration to avoid name resolution issues
+        dns_policy="ClusterFirst",
+        # Add specific logging configuration
+        log_events_on_failure=True,
+        # Add timeout configurations
+        task_timeout=timedelta(minutes=10),
+        # Ensure the pod stays around for log collection
+        is_delete_operator_pod=False,
+        # Enable log collection from the pod
+        get_logs=True,
+        # Set log fetch timeout
+        startup_timeout_seconds=300, 
     )
 
     # Task 2: Run Great Expectations via Python

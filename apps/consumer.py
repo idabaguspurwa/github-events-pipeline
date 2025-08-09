@@ -49,6 +49,11 @@ def get_kafka_consumer():
                 connections_max_idle_ms=540000,
                 reconnect_backoff_ms=50,
                 reconnect_backoff_max_ms=1000,
+                # Add SASL authentication
+                security_protocol='SASL_PLAINTEXT',
+                sasl_mechanism='SCRAM-SHA-256',
+                sasl_plain_username='user1',
+                sasl_plain_password='9WDcJnfRut',
             )
             print("Successfully connected to Kafka.")
             return consumer
@@ -88,19 +93,43 @@ def main():
     batch = []
     batch_size = 100
     start_time = time.time()
+    last_heartbeat = time.time()
+    heartbeat_interval = 30  # Print heartbeat every 30 seconds
+    poll_count = 0
+    message_count = 0
 
     print(f"Consumer will run for {RUN_DURATION_SECONDS} seconds.")
+    print(f"Starting to poll for messages from topic: {KAFKA_TOPIC}")
 
     try:
         while time.time() - start_time < RUN_DURATION_SECONDS:
-            records = consumer.poll(timeout_ms=1000, max_records=batch_size)
+            poll_count += 1
+            elapsed = time.time() - start_time
+            
+            # Print heartbeat message every 30 seconds
+            if time.time() - last_heartbeat >= heartbeat_interval:
+                print(f"Heartbeat: {elapsed:.1f}s elapsed, {poll_count} polls, {message_count} messages processed")
+                last_heartbeat = time.time()
+            
+            try:
+                records = consumer.poll(timeout_ms=5000, max_records=batch_size)
+                print(f"Poll #{poll_count}: Retrieved {len(records)} topic partitions")
+            except Exception as e:
+                print(f"Error during poll: {e}")
+                time.sleep(1)
+                continue
             
             if not records:
+                print(f"Poll #{poll_count}: No records received")
                 continue
 
             for topic_partition, messages in records.items():
+                print(f"Processing {len(messages)} messages from {topic_partition}")
                 for message in messages:
                     batch.append(message.value)
+                    message_count += 1
+            
+            print(f"Current batch size: {len(batch)}")
             
             if batch:
                 # Use cursor in a more robust way
@@ -110,7 +139,7 @@ def main():
                         "INSERT INTO RAW_EVENTS (V) SELECT PARSE_JSON(column1) FROM VALUES " + ", ".join(["(%s)"] * len(batch)),
                         [json.dumps(rec) for rec in batch]
                     )
-                    print(f"Inserted {len(batch)} records into Snowflake.")
+                    print(f"Successfully inserted {len(batch)} records into Snowflake.")
                     batch = []
                 except Exception as e:
                     print(f"Error inserting batch to Snowflake: {e}")
