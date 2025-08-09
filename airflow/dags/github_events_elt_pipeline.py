@@ -147,16 +147,7 @@ except Exception:
     })()
     snowflake_extra = {}
 
-# --- Environment Variables for dbt ---
-dbt_env = {
-    "DBT_USER": snowflake_conn.login,
-    "DBT_PASSWORD": snowflake_conn.get_password(),
-    "DBT_ACCOUNT": snowflake_conn.host,
-    "DBT_WAREHOUSE": snowflake_extra.get("warehouse"),
-    "DBT_DATABASE": snowflake_extra.get("database"),
-    "DBT_ROLE": snowflake_extra.get("role"),
-    "DBT_SCHEMA": snowflake_extra.get("schema"),
-}
+# Note: dbt environment variables now come from Kubernetes secrets instead of Airflow connections
 
 # --- DAG Definition ---
 with DAG(
@@ -391,37 +382,42 @@ with DAG(
     with TaskGroup("transformation_phase", dag=dag) as transformation_group:
         
         # Task 5: Run dbt transformations with real Snowflake data
-        dbt_transform = BashOperator(
+        dbt_transform = KubernetesPodOperator(
             task_id="run_dbt_transformations",
-            bash_command=(
+            name="dbt-transform-pod",
+            namespace="airflow",
+            image="python:3.10-slim",
+            image_pull_policy="IfNotPresent",
+            cmds=["/bin/bash", "-c"],
+            arguments=[
                 "echo '🔄 Preparing dbt environment for real-time data transformations...' && "
-                "echo 'Checking for dbt installation...' && "
-                "which dbt || (echo '📦 Installing dbt-snowflake...' && pip install dbt-snowflake) && "
+                "echo 'Installing dbt-snowflake...' && "
+                "pip install dbt-snowflake && "
                 "echo '🔍 Verifying dbt installation...' && "
                 "dbt --version && "
-                "echo '📁 Checking dbt project structure...' && "
-                "ls -la /opt/airflow/dags/repo/dbt_project/ && "
                 "echo '🏗️ Setting up dbt profiles...' && "
                 "mkdir -p ~/.dbt && "
-                "echo 'my_dbt_project:' > ~/.dbt/profiles.yml && "
-                "echo '  outputs:' >> ~/.dbt/profiles.yml && "
-                "echo '    prod:' >> ~/.dbt/profiles.yml && "
-                "echo '      type: snowflake' >> ~/.dbt/profiles.yml && "
-                "echo '      account: $SNOWFLAKE_ACCOUNT' >> ~/.dbt/profiles.yml && "
-                "echo '      user: $SNOWFLAKE_USER' >> ~/.dbt/profiles.yml && "
-                "echo '      password: $SNOWFLAKE_PASSWORD' >> ~/.dbt/profiles.yml && "
-                "echo '      database: $SNOWFLAKE_DATABASE' >> ~/.dbt/profiles.yml && "
-                "echo '      warehouse: $SNOWFLAKE_WAREHOUSE' >> ~/.dbt/profiles.yml && "
-                "echo '      schema: ANALYTICS' >> ~/.dbt/profiles.yml && "
-                "echo '      role: $SNOWFLAKE_ROLE' >> ~/.dbt/profiles.yml && "
-                "echo '  target: prod' >> ~/.dbt/profiles.yml && "
+                "cat > ~/.dbt/profiles.yml << EOF\n"
+                "my_dbt_project:\n"
+                "  outputs:\n"
+                "    prod:\n"
+                "      type: snowflake\n"
+                "      account: $SNOWFLAKE_ACCOUNT\n"
+                "      user: $SNOWFLAKE_USER\n"
+                "      password: $SNOWFLAKE_PASSWORD\n"
+                "      database: $SNOWFLAKE_DATABASE\n"
+                "      warehouse: $SNOWFLAKE_WAREHOUSE\n"
+                "      schema: ANALYTICS\n"
+                "      role: $SNOWFLAKE_ROLE\n"
+                "  target: prod\n"
+                "EOF && "
                 "echo '🔄 Running dbt transformations on real-time GitHub events data...' && "
                 "cd /opt/airflow/dags/repo/dbt_project/my_dbt_project && "
                 "dbt debug && "
                 "dbt run --target prod && "
                 "echo '✅ dbt transformations completed successfully with real data'"
-            ),
-            # Use environment variables from Snowflake credentials secret
+            ],
+            # Use env_from to mount Snowflake credentials from secret
             env_from=[
                 k8s.V1EnvFromSource(
                     secret_ref=k8s.V1SecretEnvSource(
@@ -429,18 +425,50 @@ with DAG(
                     )
                 )
             ],
+            in_cluster=True,
+            config_file=None,
+            kubernetes_conn_id=None,
+            is_delete_operator_pod=False,
+            container_resources=k8s.V1ResourceRequirements(
+                requests={"memory": "256Mi", "cpu": "200m"},
+                limits={"memory": "1Gi", "cpu": "500m"}
+            ),
+            get_logs=True,
+            log_events_on_failure=True,
+            startup_timeout_seconds=300,
         )
         
         # Task 6: Run dbt tests on real transformed data
-        dbt_test = BashOperator(
+        dbt_test = KubernetesPodOperator(
             task_id="run_dbt_tests",
-            bash_command=(
+            name="dbt-test-pod",
+            namespace="airflow",
+            image="python:3.10-slim",
+            image_pull_policy="IfNotPresent",
+            cmds=["/bin/bash", "-c"],
+            arguments=[
                 "echo '🧪 Running dbt tests on transformed real-time data...' && "
+                "pip install dbt-snowflake && "
+                "mkdir -p ~/.dbt && "
+                "cat > ~/.dbt/profiles.yml << EOF\n"
+                "my_dbt_project:\n"
+                "  outputs:\n"
+                "    prod:\n"
+                "      type: snowflake\n"
+                "      account: $SNOWFLAKE_ACCOUNT\n"
+                "      user: $SNOWFLAKE_USER\n"
+                "      password: $SNOWFLAKE_PASSWORD\n"
+                "      database: $SNOWFLAKE_DATABASE\n"
+                "      warehouse: $SNOWFLAKE_WAREHOUSE\n"
+                "      schema: ANALYTICS\n"
+                "      role: $SNOWFLAKE_ROLE\n"
+                "  target: prod\n"
+                "EOF && "
                 "cd /opt/airflow/dags/repo/dbt_project/my_dbt_project && "
                 "dbt test --target prod && "
                 "echo '✅ dbt tests completed - data quality verified'"
-            ),
-            # Use environment variables from Snowflake credentials secret
+            ],
+            # Use env_from to mount Snowflake credentials from secret
             env_from=[
                 k8s.V1EnvFromSource(
                     secret_ref=k8s.V1SecretEnvSource(
@@ -448,18 +476,50 @@ with DAG(
                     )
                 )
             ],
+            in_cluster=True,
+            config_file=None,
+            kubernetes_conn_id=None,
+            is_delete_operator_pod=False,
+            container_resources=k8s.V1ResourceRequirements(
+                requests={"memory": "128Mi", "cpu": "100m"},
+                limits={"memory": "512Mi", "cpu": "300m"}
+            ),
+            get_logs=True,
+            log_events_on_failure=True,
+            startup_timeout_seconds=300,
         )
         
         # Task 7: Generate dbt documentation for real data models
-        dbt_docs = BashOperator(
+        dbt_docs = KubernetesPodOperator(
             task_id="generate_dbt_documentation",
-            bash_command=(
+            name="dbt-docs-pod",
+            namespace="airflow",
+            image="python:3.10-slim",
+            image_pull_policy="IfNotPresent",
+            cmds=["/bin/bash", "-c"],
+            arguments=[
                 "echo '📚 Generating dbt documentation for real-time analytics models...' && "
+                "pip install dbt-snowflake && "
+                "mkdir -p ~/.dbt && "
+                "cat > ~/.dbt/profiles.yml << EOF\n"
+                "my_dbt_project:\n"
+                "  outputs:\n"
+                "    prod:\n"
+                "      type: snowflake\n"
+                "      account: $SNOWFLAKE_ACCOUNT\n"
+                "      user: $SNOWFLAKE_USER\n"
+                "      password: $SNOWFLAKE_PASSWORD\n"
+                "      database: $SNOWFLAKE_DATABASE\n"
+                "      warehouse: $SNOWFLAKE_WAREHOUSE\n"
+                "      schema: ANALYTICS\n"
+                "      role: $SNOWFLAKE_ROLE\n"
+                "  target: prod\n"
+                "EOF && "
                 "cd /opt/airflow/dags/repo/dbt_project/my_dbt_project && "
                 "dbt docs generate --target prod && "
                 "echo '✅ dbt documentation generated for real data models'"
-            ),
-            # Use environment variables from Snowflake credentials secret
+            ],
+            # Use env_from to mount Snowflake credentials from secret
             env_from=[
                 k8s.V1EnvFromSource(
                     secret_ref=k8s.V1SecretEnvSource(
@@ -467,6 +527,17 @@ with DAG(
                     )
                 )
             ],
+            in_cluster=True,
+            config_file=None,
+            kubernetes_conn_id=None,
+            is_delete_operator_pod=False,
+            container_resources=k8s.V1ResourceRequirements(
+                requests={"memory": "128Mi", "cpu": "100m"},
+                limits={"memory": "512Mi", "cpu": "300m"}
+            ),
+            get_logs=True,
+            log_events_on_failure=True,
+            startup_timeout_seconds=300,
         )
         
         dbt_transform >> dbt_test >> dbt_docs
