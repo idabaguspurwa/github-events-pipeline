@@ -235,28 +235,52 @@ with DAG(
             task_id="start_github_producer",
             name="github-producer-pod",
             namespace="airflow",
-            image="github-producer:v3",
+            image="github-producer:v4",  # Updated to v4 with improved logging and dummy data support
             image_pull_policy="IfNotPresent",
             cmds=["sh", "-c"],
-            arguments=["python -u producer.py 2>&1 | tee /tmp/producer.log ; exit ${PIPESTATUS[0]}"],
+            arguments=[
+                "echo '🚀 Starting GitHub Events Producer...' && "
+                "echo 'Environment Variables:' && "
+                "echo '- KAFKA_BROKER:' $KAFKA_BROKER && "
+                "echo '- GITHUB_API_URL:' $GITHUB_API_URL && "
+                "echo '- FETCH_INTERVAL:' $FETCH_INTERVAL && "
+                "echo '- RUN_DURATION_SECONDS:' $RUN_DURATION_SECONDS && "
+                "echo '- GITHUB_TOKEN:' ${GITHUB_TOKEN:0:8}... && "
+                "echo 'Starting producer application...' && "
+                "python -u producer.py 2>&1 | tee /tmp/producer.log ; "
+                "exit_code=${PIPESTATUS[0]} ; "
+                "echo 'Producer finished with exit code:' $exit_code ; "
+                "echo '=== FINAL LOG SUMMARY ===' ; "
+                "echo 'Log file contents:' ; "
+                "cat /tmp/producer.log 2>/dev/null || echo 'No log file found' ; "
+                "exit $exit_code"
+            ],
             # Environment variables for producer
             env_vars={
                 "KAFKA_BROKER": "kafka:9092",
                 "GITHUB_API_URL": "https://api.github.com/events",
                 "FETCH_INTERVAL": "10",  # Fetch every 10 seconds
                 "RUN_DURATION_SECONDS": "300",  # Run for 5 minutes
+                "GITHUB_TOKEN": "dummy_token_for_testing",  # Use a dummy token for testing
             },
             in_cluster=True,
             config_file=None,
             kubernetes_conn_id=None,
+            # Critical: Keep pod running longer for log collection
             is_delete_operator_pod=False,
             container_resources=k8s.V1ResourceRequirements(
                 requests={"memory": "64Mi", "cpu": "50m"},
                 limits={"memory": "256Mi", "cpu": "200m"}
             ),
+            # Enhanced logging configuration
             log_events_on_failure=True,
             get_logs=True,
-            startup_timeout_seconds=120,
+            do_xcom_push=False,
+            # Extended timeouts for log collection
+            startup_timeout_seconds=180,
+            pod_runtime_timeout_seconds=420,  # 7 minutes total (5 min run + 2 min buffer)
+            retries=1,
+            retry_delay=timedelta(minutes=2),
         )
         
         # Task 2: Consume and Load to Snowflake
@@ -267,7 +291,22 @@ with DAG(
             image="github-consumer:v3",
             image_pull_policy="IfNotPresent",
             cmds=["sh", "-c"],
-            arguments=["python -u consumer.py 2>&1 | tee /tmp/consumer.log ; exit ${PIPESTATUS[0]}"],
+            arguments=[
+                "echo '📥 Starting Kafka Consumer for Snowflake loading...' && "
+                "echo 'Environment Variables:' && "
+                "echo '- KAFKA_BROKER:' $KAFKA_BROKER && "
+                "echo '- RUN_DURATION_SECONDS:' $RUN_DURATION_SECONDS && "
+                "echo '- BATCH_SIZE:' $BATCH_SIZE && "
+                "echo '- MAX_POLL_RECORDS:' $MAX_POLL_RECORDS && "
+                "echo 'Starting consumer application...' && "
+                "python -u consumer.py 2>&1 | tee /tmp/consumer.log ; "
+                "exit_code=${PIPESTATUS[0]} ; "
+                "echo 'Consumer finished with exit code:' $exit_code ; "
+                "echo '=== FINAL LOG SUMMARY ===' ; "
+                "echo 'Log file contents:' ; "
+                "cat /tmp/consumer.log 2>/dev/null || echo 'No log file found' ; "
+                "exit $exit_code"
+            ],
             # Use env_from to reliably mount the manually created 'snowflake-creds' secret
             env_from=[
                 k8s.V1EnvFromSource(
@@ -286,14 +325,19 @@ with DAG(
             in_cluster=True,
             config_file=None,
             kubernetes_conn_id=None,
+            # Critical: Keep pod running longer for log collection
             is_delete_operator_pod=False,
             container_resources=k8s.V1ResourceRequirements(
                 requests={"memory": "128Mi", "cpu": "100m"},
                 limits={"memory": "512Mi", "cpu": "500m"}
             ),
+            # Enhanced logging configuration
             log_events_on_failure=True,
             get_logs=True,
+            do_xcom_push=False,
+            # Extended timeouts for log collection
             startup_timeout_seconds=300,
+            pod_runtime_timeout_seconds=480,  # 8 minutes total (6 min run + 2 min buffer)
         )
         
         # Producer should start first, then consumer should start after a delay
