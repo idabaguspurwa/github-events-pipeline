@@ -238,7 +238,7 @@ with DAG(
             namespace="airflow",
             image="github-producer:v4",  # Updated to v4 with improved logging and dummy data support
             image_pull_policy="IfNotPresent",
-            cmds=["sh", "-c"],
+            cmds=["/bin/bash", "-c"],
             arguments=[
                 "echo '🚀 Starting GitHub Events Producer...' && "
                 "echo 'Environment Variables:' && "
@@ -246,23 +246,30 @@ with DAG(
                 "echo '- GITHUB_API_URL:' $GITHUB_API_URL && "
                 "echo '- FETCH_INTERVAL:' $FETCH_INTERVAL && "
                 "echo '- RUN_DURATION_SECONDS:' $RUN_DURATION_SECONDS && "
-                "echo '- GITHUB_TOKEN:' ${GITHUB_TOKEN:0:8}... && "
+                "echo '- GITHUB_TOKEN: [SET]' && "
                 "echo 'Starting producer application...' && "
                 "python -u producer.py 2>&1 | tee /tmp/producer.log ; "
-                "exit_code=${PIPESTATUS[0]} ; "
+                "exit_code=${?} ; "
                 "echo 'Producer finished with exit code:' $exit_code ; "
                 "echo '=== FINAL LOG SUMMARY ===' ; "
                 "echo 'Log file contents:' ; "
                 "cat /tmp/producer.log 2>/dev/null || echo 'No log file found' ; "
                 "exit $exit_code"
             ],
-            # Environment variables for producer
+            # Use env_from to securely mount the GitHub token secret
+            env_from=[
+                k8s.V1EnvFromSource(
+                    secret_ref=k8s.V1SecretEnvSource(
+                        name="github-token",
+                    )
+                )
+            ],
+            # Environment variables for producer (without sensitive token)
             env_vars={
                 "KAFKA_BROKER": "kafka:9092",
                 "GITHUB_API_URL": "https://api.github.com/events",
                 "FETCH_INTERVAL": "10",  # Fetch every 10 seconds
                 "RUN_DURATION_SECONDS": "300",  # Run for 5 minutes
-                "GITHUB_TOKEN": "dummy_token_for_testing",  # Use a dummy token for testing
             },
             in_cluster=True,
             config_file=None,
@@ -291,7 +298,7 @@ with DAG(
             namespace="airflow",
             image="github-consumer:v3",
             image_pull_policy="IfNotPresent",
-            cmds=["sh", "-c"],
+            cmds=["/bin/bash", "-c"],
             arguments=[
                 "echo '📥 Starting Kafka Consumer for Snowflake loading...' && "
                 "echo 'Environment Variables:' && "
@@ -301,7 +308,7 @@ with DAG(
                 "echo '- MAX_POLL_RECORDS:' $MAX_POLL_RECORDS && "
                 "echo 'Starting consumer application...' && "
                 "python -u consumer.py 2>&1 | tee /tmp/consumer.log ; "
-                "exit_code=${PIPESTATUS[0]} ; "
+                "exit_code=${?} ; "
                 "echo 'Consumer finished with exit code:' $exit_code ; "
                 "echo '=== FINAL LOG SUMMARY ===' ; "
                 "echo 'Log file contents:' ; "
