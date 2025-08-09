@@ -161,6 +161,7 @@ with DAG(
         "email_on_retry": False,
         "retries": 2,
         "retry_delay": timedelta(minutes=5),
+        "execution_timeout": timedelta(minutes=15),  # Maximum task execution time
     },
 ) as dag:
     
@@ -276,9 +277,9 @@ with DAG(
             log_events_on_failure=True,
             get_logs=True,
             do_xcom_push=False,
-            # Extended timeouts for log collection
+            # Timeout configurations (using valid parameters)
             startup_timeout_seconds=180,
-            pod_runtime_timeout_seconds=420,  # 7 minutes total (5 min run + 2 min buffer)
+            # Note: pod_runtime_timeout_seconds is not a valid parameter, removed
             retries=1,
             retry_delay=timedelta(minutes=2),
         )
@@ -335,9 +336,9 @@ with DAG(
             log_events_on_failure=True,
             get_logs=True,
             do_xcom_push=False,
-            # Extended timeouts for log collection
+            # Timeout configurations (using valid parameters)
             startup_timeout_seconds=300,
-            pod_runtime_timeout_seconds=480,  # 8 minutes total (6 min run + 2 min buffer)
+            # Note: pod_runtime_timeout_seconds is not a valid parameter, removed
         )
         
         # Producer should start first, then consumer should start after a delay
