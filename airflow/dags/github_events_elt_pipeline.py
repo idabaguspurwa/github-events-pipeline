@@ -10,6 +10,26 @@ from airflow.models import Connection
 from airflow.utils.task_group import TaskGroup
 from kubernetes.client import models as k8s
 
+# --- Common Kubernetes Pod Configuration for Better Logging ---
+def get_common_pod_config():
+    """
+    Returns common configuration for KubernetesPodOperator to ensure better log visibility
+    """
+    return {
+        "in_cluster": True,
+        "config_file": None,
+        "kubernetes_conn_id": None,
+        # Enhanced logging configuration for persistent log access
+        "is_delete_operator_pod": False,  # Keep pods after completion for log access
+        "get_logs": True,  # Always fetch logs into Airflow
+        "log_events_on_failure": True,  # Log pod events on failure  
+        "log_pod_spec_on_failure": True,  # Log pod spec on failure
+        "do_xcom_push": False,  # Don't push large logs to XCom
+        "startup_timeout_seconds": 300,  # 5 minute startup timeout
+        "retries": 2,
+        "retry_delay": timedelta(minutes=2),
+    }
+
 # --- Great Expectations Data Quality Function ---
 def run_great_expectations():
     """
@@ -283,17 +303,8 @@ with DAG(
                 requests={"memory": "64Mi", "cpu": "50m"},
                 limits={"memory": "256Mi", "cpu": "200m"}
             ),
-            # Enhanced logging configuration
-            log_events_on_failure=True,
-            get_logs=True,
-            do_xcom_push=False,
-            # Timeout configurations (using valid parameters)
-            startup_timeout_seconds=180,
-            # Ensure logs are retrieved even on failure
-            log_pod_spec_on_failure=True,
-            # Note: pod_runtime_timeout_seconds is not a valid parameter, removed
-            retries=1,
-            retry_delay=timedelta(minutes=2),
+            # Use common pod configuration for enhanced logging
+            **get_common_pod_config(),
         )
         
         # Task 2: Consume and Load to Snowflake
@@ -338,21 +349,12 @@ with DAG(
             in_cluster=True,
             config_file=None,
             kubernetes_conn_id=None,
-            # Critical: Keep pod running longer for log collection
-            is_delete_operator_pod=False,
             container_resources=k8s.V1ResourceRequirements(
                 requests={"memory": "128Mi", "cpu": "100m"},
                 limits={"memory": "512Mi", "cpu": "500m"}
             ),
-            # Enhanced logging configuration
-            log_events_on_failure=True,
-            get_logs=True,
-            do_xcom_push=False,
-            # Timeout configurations (using valid parameters)
-            startup_timeout_seconds=300,
-            # Ensure logs are retrieved even on failure
-            log_pod_spec_on_failure=True,
-            # Note: pod_runtime_timeout_seconds is not a valid parameter, removed
+            # Use common pod configuration for enhanced logging
+            **get_common_pod_config(),
         )
         
         # Producer should start first, then consumer should start after a delay
@@ -397,20 +399,22 @@ with DAG(
                 "dbt --version && "
                 "echo '🏗️ Setting up dbt profiles...' && "
                 "mkdir -p ~/.dbt && "
-                "cat > ~/.dbt/profiles.yml << EOF\n"
-                "my_dbt_project:\n"
-                "  outputs:\n"
-                "    prod:\n"
-                "      type: snowflake\n"
-                "      account: $SNOWFLAKE_ACCOUNT\n"
-                "      user: $SNOWFLAKE_USER\n"
-                "      password: $SNOWFLAKE_PASSWORD\n"
-                "      database: $SNOWFLAKE_DATABASE\n"
-                "      warehouse: $SNOWFLAKE_WAREHOUSE\n"
-                "      schema: ANALYTICS\n"
-                "      role: $SNOWFLAKE_ROLE\n"
-                "  target: prod\n"
-                "EOF && "
+                "cat > ~/.dbt/profiles.yml << 'EOFPROFILE' "
+                "my_dbt_project: "
+                "  outputs: "
+                "    prod: "
+                "      type: snowflake "
+                "      account: $SNOWFLAKE_ACCOUNT "
+                "      user: $SNOWFLAKE_USER "
+                "      password: $SNOWFLAKE_PASSWORD "
+                "      database: $SNOWFLAKE_DATABASE "
+                "      warehouse: $SNOWFLAKE_WAREHOUSE "
+                "      schema: ANALYTICS "
+                "      role: $SNOWFLAKE_ROLE "
+                "  target: prod "
+                "EOFPROFILE && "
+                "echo '📋 Verifying dbt profile...' && "
+                "cat ~/.dbt/profiles.yml && "
                 "echo '🔄 Running dbt transformations on real-time GitHub events data...' && "
                 "cd /opt/airflow/dags/repo/dbt_project/my_dbt_project && "
                 "dbt debug && "
@@ -425,17 +429,12 @@ with DAG(
                     )
                 )
             ],
-            in_cluster=True,
-            config_file=None,
-            kubernetes_conn_id=None,
-            is_delete_operator_pod=False,
             container_resources=k8s.V1ResourceRequirements(
                 requests={"memory": "256Mi", "cpu": "200m"},
                 limits={"memory": "1Gi", "cpu": "500m"}
             ),
-            get_logs=True,
-            log_events_on_failure=True,
-            startup_timeout_seconds=300,
+            # Use common pod configuration for enhanced logging
+            **get_common_pod_config(),
         )
         
         # Task 6: Run dbt tests on real transformed data
@@ -450,20 +449,20 @@ with DAG(
                 "echo '🧪 Running dbt tests on transformed real-time data...' && "
                 "pip install dbt-snowflake && "
                 "mkdir -p ~/.dbt && "
-                "cat > ~/.dbt/profiles.yml << EOF\n"
-                "my_dbt_project:\n"
-                "  outputs:\n"
-                "    prod:\n"
-                "      type: snowflake\n"
-                "      account: $SNOWFLAKE_ACCOUNT\n"
-                "      user: $SNOWFLAKE_USER\n"
-                "      password: $SNOWFLAKE_PASSWORD\n"
-                "      database: $SNOWFLAKE_DATABASE\n"
-                "      warehouse: $SNOWFLAKE_WAREHOUSE\n"
-                "      schema: ANALYTICS\n"
-                "      role: $SNOWFLAKE_ROLE\n"
-                "  target: prod\n"
-                "EOF && "
+                "cat > ~/.dbt/profiles.yml << 'EOFPROFILE' "
+                "my_dbt_project: "
+                "  outputs: "
+                "    prod: "
+                "      type: snowflake "
+                "      account: $SNOWFLAKE_ACCOUNT "
+                "      user: $SNOWFLAKE_USER "
+                "      password: $SNOWFLAKE_PASSWORD "
+                "      database: $SNOWFLAKE_DATABASE "
+                "      warehouse: $SNOWFLAKE_WAREHOUSE "
+                "      schema: ANALYTICS "
+                "      role: $SNOWFLAKE_ROLE "
+                "  target: prod "
+                "EOFPROFILE && "
                 "cd /opt/airflow/dags/repo/dbt_project/my_dbt_project && "
                 "dbt test --target prod && "
                 "echo '✅ dbt tests completed - data quality verified'"
@@ -476,17 +475,12 @@ with DAG(
                     )
                 )
             ],
-            in_cluster=True,
-            config_file=None,
-            kubernetes_conn_id=None,
-            is_delete_operator_pod=False,
             container_resources=k8s.V1ResourceRequirements(
                 requests={"memory": "128Mi", "cpu": "100m"},
                 limits={"memory": "512Mi", "cpu": "300m"}
             ),
-            get_logs=True,
-            log_events_on_failure=True,
-            startup_timeout_seconds=300,
+            # Use common pod configuration for enhanced logging
+            **get_common_pod_config(),
         )
         
         # Task 7: Generate dbt documentation for real data models
@@ -501,20 +495,20 @@ with DAG(
                 "echo '📚 Generating dbt documentation for real-time analytics models...' && "
                 "pip install dbt-snowflake && "
                 "mkdir -p ~/.dbt && "
-                "cat > ~/.dbt/profiles.yml << EOF\n"
-                "my_dbt_project:\n"
-                "  outputs:\n"
-                "    prod:\n"
-                "      type: snowflake\n"
-                "      account: $SNOWFLAKE_ACCOUNT\n"
-                "      user: $SNOWFLAKE_USER\n"
-                "      password: $SNOWFLAKE_PASSWORD\n"
-                "      database: $SNOWFLAKE_DATABASE\n"
-                "      warehouse: $SNOWFLAKE_WAREHOUSE\n"
-                "      schema: ANALYTICS\n"
-                "      role: $SNOWFLAKE_ROLE\n"
-                "  target: prod\n"
-                "EOF && "
+                "cat > ~/.dbt/profiles.yml << 'EOFPROFILE' "
+                "my_dbt_project: "
+                "  outputs: "
+                "    prod: "
+                "      type: snowflake "
+                "      account: $SNOWFLAKE_ACCOUNT "
+                "      user: $SNOWFLAKE_USER "
+                "      password: $SNOWFLAKE_PASSWORD "
+                "      database: $SNOWFLAKE_DATABASE "
+                "      warehouse: $SNOWFLAKE_WAREHOUSE "
+                "      schema: ANALYTICS "
+                "      role: $SNOWFLAKE_ROLE "
+                "  target: prod "
+                "EOFPROFILE && "
                 "cd /opt/airflow/dags/repo/dbt_project/my_dbt_project && "
                 "dbt docs generate --target prod && "
                 "echo '✅ dbt documentation generated for real data models'"
@@ -527,17 +521,12 @@ with DAG(
                     )
                 )
             ],
-            in_cluster=True,
-            config_file=None,
-            kubernetes_conn_id=None,
-            is_delete_operator_pod=False,
             container_resources=k8s.V1ResourceRequirements(
                 requests={"memory": "128Mi", "cpu": "100m"},
                 limits={"memory": "512Mi", "cpu": "300m"}
             ),
-            get_logs=True,
-            log_events_on_failure=True,
-            startup_timeout_seconds=300,
+            # Use common pod configuration for enhanced logging
+            **get_common_pod_config(),
         )
         
         dbt_transform >> dbt_test >> dbt_docs
