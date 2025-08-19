@@ -23,11 +23,8 @@ def get_common_pod_config():
         "is_delete_operator_pod": False,  # Keep pods after completion for log access
         "get_logs": True,  # Always fetch logs into Airflow
         "log_events_on_failure": True,  # Log pod events on failure  
-        "log_pod_spec_on_failure": True,  # Log pod spec on failure
         "do_xcom_push": False,  # Don't push large logs to XCom
         "startup_timeout_seconds": 600,  # 10 minute startup timeout
-        "log_events_on_start": True,  # Log pod events when starting
-        "reattach_on_restart": True,  # Reattach to existing pods on restart
         "retries": 2,
         "retry_delay": timedelta(minutes=2),
     }
