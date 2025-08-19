@@ -430,7 +430,7 @@ with DAG(
                 "echo '    v:repo:name::string as repo_name,' >> models/staging/stg_github_events.sql && "
                 "echo '    v:created_at::timestamp_ntz as event_created_at,' >> models/staging/stg_github_events.sql && "
                 "echo '    loaded_at' >> models/staging/stg_github_events.sql && "
-                "echo 'from {{ source(\"raw_data\", \"raw_events\") }}' >> models/staging/stg_github_events.sql && "
+                "echo 'from {{{{ source(\"raw_data\", \"raw_events\") }}}}' >> models/staging/stg_github_events.sql && "
                 "echo '🔄 Running dbt transformations on real-time GitHub events data...' && "
                 "dbt debug && "
                 "dbt run --target prod && "
