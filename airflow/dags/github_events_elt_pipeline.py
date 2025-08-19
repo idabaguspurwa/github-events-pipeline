@@ -392,6 +392,8 @@ with DAG(
             cmds=["/bin/bash", "-c"],
             arguments=[
                 "echo '🔄 Preparing dbt environment for real-time data transformations...' && "
+                "echo 'Installing system dependencies...' && "
+                "apt-get update && apt-get install -y git && "
                 "echo 'Installing dbt-snowflake...' && "
                 "pip install dbt-snowflake && "
                 "echo '🔍 Verifying dbt installation...' && "
