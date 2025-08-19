@@ -453,7 +453,7 @@ with DAG(
         )
         
         # Task 6: Run dbt tests on real transformed data
-        dbt_test = KubernetesPodOperator(
+        dbt_test = NoTemplateKubernetesPodOperator(
             task_id="run_dbt_tests",
             name="dbt-test-pod",
             namespace="airflow",
@@ -518,7 +518,7 @@ with DAG(
         )
         
         # Task 7: Generate dbt documentation for real data models
-        dbt_docs = KubernetesPodOperator(
+        dbt_docs = NoTemplateKubernetesPodOperator(
             task_id="generate_dbt_documentation",
             name="dbt-docs-pod",
             namespace="airflow",
