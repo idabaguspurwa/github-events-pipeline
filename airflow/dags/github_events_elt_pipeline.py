@@ -10,6 +10,14 @@ from airflow.models import Connection
 from airflow.utils.task_group import TaskGroup
 from kubernetes.client import models as k8s
 
+# Custom KubernetesPodOperator that excludes 'arguments' from Jinja templating
+class NoTemplateKubernetesPodOperator(KubernetesPodOperator):
+    """
+    Custom KubernetesPodOperator that prevents Jinja templating on arguments field.
+    This is needed when arguments contain syntax that conflicts with Jinja (like dbt templates).
+    """
+    template_fields = [f for f in KubernetesPodOperator.template_fields if f != 'arguments']
+
 # --- Common Kubernetes Pod Configuration for Better Logging ---
 def get_common_pod_config():
     """
@@ -375,7 +383,7 @@ with DAG(
     with TaskGroup("transformation_phase", dag=dag) as transformation_group:
         
         # Task 5: Run dbt transformations with real Snowflake data
-        dbt_transform = KubernetesPodOperator(
+        dbt_transform = NoTemplateKubernetesPodOperator(
             task_id="run_dbt_transformations",
             name="dbt-transform-pod",
             namespace="airflow",
